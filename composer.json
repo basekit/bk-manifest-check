@@ -1,0 +1,17 @@
+{
+
+    "name": "basekit/bk-manifest-check",
+    "description": "BaseKit Manifest Checker.",
+
+    "authors": [
+        {
+            "name": "Richard Healy",
+            "email": "richard.healy@basekit.com"
+        }
+    ],
+
+    "require": {
+        "symfony/symfony": "2.6"
+    }
+
+}
