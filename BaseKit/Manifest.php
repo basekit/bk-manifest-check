@@ -11,7 +11,7 @@ use BaseKit\ManifestException;
  * Loads basekit.json and all files matching template.*.json
  * from the path passed in the constructor.
  *
- * Merges all manifest files ensuring the master basekit.json
+ * Merges all manifest files ensuring the master global.json
  * manifest contains version,templates,groups and categories sections.
  *
  * Ensures there is no key duplication in the templates and categories sections.
@@ -28,13 +28,14 @@ use BaseKit\ManifestException;
  */
 class Manifest
 {
-    const BASEKIT_MANIFEST = 'basekit.json';
-    const PARTNER_MANIFEST_PATTERN = 'template.*.json';
+    const BASEKIT_MANIFEST = 'global.json';
+    const PARTNER_MANIFEST_PATTERN = '*template.*.json';
 
     private $manifestPath;
     private $mergedManifest;
     private $manifestFilenames;
     private $manifests;
+    private $version;
     private $groupNestingDereferencer;
 
     public function __construct($manifestPath)
@@ -73,6 +74,11 @@ class Manifest
         return $this->mergedManifest['version'];
     }
 
+    public function setVersion($version) 
+    {
+        $this->version = $version;
+    }
+
     private function loadManifest()
     {
         //Lazy load the manifest on section request only
@@ -89,14 +95,16 @@ class Manifest
         $finder = new Finder();
         $finder->files()->in($this->manifestPath);
         foreach ($finder as $file) {
-            if (!$file->isFile()) {
+            if (!$file->isFile() || $file->getFilename() == 'README.md') {
                 continue;
             }
-            $filename = $file->getFilename();
-            if ($filename == self::BASEKIT_MANIFEST || fnmatch(self::PARTNER_MANIFEST_PATTERN, $filename)) {
+            $filename = $file->getRealPath();
+
+            if (stripos($filename, self::BASEKIT_MANIFEST) || fnmatch(self::PARTNER_MANIFEST_PATTERN, $filename)) {
                 $this->manifestFilenames[] = $filename;
             }
         }
+
         if (empty($this->manifestFilenames)) {
             throw new ManifestException(
                 sprintf(
@@ -111,25 +119,24 @@ class Manifest
     private function loadManifestFiles()
     {
         foreach ($this->manifestFilenames as $manifestFilename) {
-            $isBaseKitManifest = ($manifestFilename == self::BASEKIT_MANIFEST);
-            $manifest = json_decode(file_get_contents($this->manifestPath.$manifestFilename), true);
+            $isBaseKitManifest = stripos($manifestFilename, self::BASEKIT_MANIFEST);
+            
+            $manifest = json_decode(file_get_contents($manifestFilename), true);
             if (null === $manifest) {
                 throw new ManifestException(sprintf('%s is not valid JSON', $manifestFilename));
             }
+
             if (!isset($manifest['templates'])) {
                 $this->generateMissingSectionException('templates', $manifestFilename);
             }
-            if ($isBaseKitManifest) {
-                if (!isset($manifest['version'])) {
-                    $this->generateMissingSectionException('version', $manifestFilename);
-                }
+            if ($isBaseKitManifest != false) {
                 if (!isset($manifest['groups'])) {
                     $this->generateMissingSectionException('groups', $manifestFilename);
                 }
                 if (!isset($manifest['categories'])) {
                     $this->generateMissingSectionException('categories', $manifestFilename);
                 }
-                $this->mergedManifest['version'] = $manifest['version'];
+                $this->mergedManifest['version'] = $this->version;
             }
             $this->manifests[] = $manifest;
         }

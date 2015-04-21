@@ -27,15 +27,24 @@ class Count extends Console\Command\Command {
 				'%sCounts the amount of themes in manifest groups.%s', 
 				PHP_EOL, 
 				PHP_EOL
-		));
+		))
+        ->addOption(
+                'bkversion',
+                null,
+                Console\Input\InputOption::VALUE_REQUIRED,
+                'Version number of the manifest being tested'
+        );
     }
 
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output) {
 
         $manifestDir = $this->manifestDir;
+        $version = $input->getOption('bkversion');
         $manifest = new Manifest($manifestDir);
+        $manifest->setVersion($manifest);
         $templates = $manifest->getTemplates();
         $groups = $manifest->getGroups();
+
         foreach ($groups as $group) {
             
             // Check hidden
