@@ -88,7 +88,7 @@ class UpstreamMerge extends Console\Command\Command {
                         $this->displayOutput($type, $buffer);
                     });
 
-                    $gitPush = new Process('git --work-tree='.$manifestDir.'/ --git-dir '.$manifestDir.'/.git push origin release/'.$currentVersion);
+                    $gitPush = new Process('git --work-tree='.$manifestDir.'/ --git-dir '.$manifestDir.'/.git push origin release/'.$v);
                     $gitPush->run(function ($type, $buffer) {
                         $this->displayOutput($type, $buffer);
                     });
