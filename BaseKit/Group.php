@@ -11,6 +11,7 @@ class Group extends Application {
 
     	$this->addCommands(array(
 			new Command\Count($manifestDirectory),
+			new Command\UpstreamMerge($manifestDirectory),
 		));
     }
 }
