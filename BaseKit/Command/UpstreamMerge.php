@@ -81,7 +81,7 @@ class UpstreamMerge extends Console\Command\Command {
                     $this->displayOutput($type, $buffer);
                 });
 
-                if ($commit === true) {
+                if ($commit == 1) {
                     // Merge branch into this one.
                     $gitCommit = new Process('git --work-tree='.$manifestDir.'/ --git-dir '.$manifestDir.'/.git commit -am "merges from release/'.$currentVersion.'"');
                     $gitCommit->run(function ($type, $buffer) {
